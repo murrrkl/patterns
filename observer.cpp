@@ -18,19 +18,23 @@ public:
     virtual void Notify() = 0;
 };
 
-/**
-* Издатель владеет некоторым важным состоянием и оповещает наблюдателей о его
-* изменениях.
-*/
 
 class Creator : public ICreator {
 public:
+
+    Creator(string _order) {
+            this->order = _order;
+            cout << "Hi, I'm the Creator your order: ' " << _order << " ' " << endl;
+    }
+
+    /*
     virtual ~Creator() {
         cout << "Goodbye, I was the Creator." << endl;
     }
+     */
 
 /**
-* Методы управления подпиской.
+* Методы управления заказами.
 */
     void Attach(IClient *client) override {
         list_client_.push_back(client);
@@ -40,27 +44,22 @@ public:
     }
     void Notify() override {
         std::list<IClient *>::iterator iterator = list_client_.begin();
-        HowManyClient();
+        // HowManyClient();
         while (iterator != list_client_.end()) {
             (*iterator)->Update(message_);
             ++iterator;
         }
     }
 
-    void CreateMessage(string message = "Empty") {
-        this->message_ = message;
+    void CreateMessage() {
+        this->message_ = "Your order: ' " + this->order + " ' is ready";
         Notify();
     }
     void HowManyClient() {
         cout << "There are " << list_client_.size() << " clients in the list." << endl;;
     }
 
-/**
-* Обычно логика подписки – только часть того, что делает Издатель. Издатели
-* часто содержат некоторую важную бизнес-логику, которая запускает метод
-* уведомления всякий раз, когда должно произойти что-то важное (или после
-* этого).
-*/
+
     void SomeBusinessLogic() {
         this->message_ = "change message message";
         Notify();
@@ -69,18 +68,19 @@ public:
 
 private:
     std::list<IClient *> list_client_;
-    std::string message_;
+    string message_;
+    string order;
 };
 
 class Client : public IClient {
 public:
     Client(Creator &creator) : creator_(creator) {
         this->creator_.Attach(this);
-        cout << "Hi, I'm the Client " << ++Client::static_number_ << endl;
+        cout << "Hi, I'm the Client " << ++Client::static_number_ << " and i am waiting for my order" << endl;
         this->number_ = Client::static_number_;
     }
     virtual ~Client() {
-        cout << "Goodbye, I was the Client " << this->number_ << endl;
+        cout << "Client " << this->number_ << " has received his order" << endl;
     }
 
     void Update(const std::string &message_from_creator) override {
@@ -105,35 +105,25 @@ private:
 int Client::static_number_ = 0;
 
 void ClientCode() {
-    
-    Creator *creator = new Creator;
-    Client *client1 = new Client(*creator);
-    Client *client2 = new Client(*creator);
-    Client *client3 = new Client(*creator);
-    Client *client4;
-    Client *client5;
 
-    creator->CreateMessage("Hello World! :D");
-    client3->RemoveMeFromTheList();
+    Creator *order1 = new Creator("Cheesburger, olivier salad, coffee");
+    Client *client1 = new Client(*order1);
 
-    creator->CreateMessage("The weather is hot today! :p");
-    client4 = new Client(*creator);
+    cout << "*******************************************" << endl;
 
-    client2->RemoveMeFromTheList();
-    client5 = new Client(*creator);
+    Creator *order2 = new Creator("Vegan burger, Vegetables salad, ice-tea");
+    Client *client2 = new Client(*order2);
 
-    creator->CreateMessage("My new car is great! ;)");
-    client5->RemoveMeFromTheList();
+    cout << "--------------------------------" << endl;
 
-    client4->RemoveMeFromTheList();
-    client1->RemoveMeFromTheList();
-
-    delete client5;
-    delete client4;
-    delete client3;
-    delete client2;
+    order1->CreateMessage();
     delete client1;
-    delete creator;
+    delete order1;
+
+    cout << "--------------------------------" << endl;
+    order2->CreateMessage();
+    delete client2;
+    delete order2;
 }
 
 int main() {
