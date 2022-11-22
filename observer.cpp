@@ -106,7 +106,7 @@ int Client::static_number_ = 0;
 
 void ClientCode() {
     
-    Creator * = new Creator;
+    Creator *creator = new Creator;
     Client *client1 = new Client(*creator);
     Client *client2 = new Client(*creator);
     Client *client3 = new Client(*creator);
