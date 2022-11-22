@@ -4,17 +4,17 @@
 
 using namespace std;
 
-class IObserver {
+class IClient {
 public:
-    virtual ~IObserver(){};
-    virtual void Update(const std::string &message_from_subject) = 0;
+    virtual ~IClient(){};
+    virtual void Update(const std::string &message_from_creator) = 0;
 };
 
-class ISubject {
+class ICreator {
 public:
-    virtual ~ISubject(){};
-    virtual void Attach(IObserver *observer) = 0;
-    virtual void Detach(IObserver *observer) = 0;
+    virtual ~ICreator(){};
+    virtual void Attach(IClient *client) = 0;
+    virtual void Detach(IClient *client) = 0;
     virtual void Notify() = 0;
 };
 
@@ -23,25 +23,25 @@ public:
 * изменениях.
 */
 
-class Subject : public ISubject {
+class Creator : public ICreator {
 public:
-    virtual ~Subject() {
-        cout << "Goodbye, I was the Subject." << endl;
+    virtual ~Creator() {
+        cout << "Goodbye, I was the Creator." << endl;
     }
 
 /**
 * Методы управления подпиской.
 */
-    void Attach(IObserver *observer) override {
-        list_observer_.push_back(observer);
+    void Attach(IClient *client) override {
+        list_client_.push_back(client);
     }
-    void Detach(IObserver *observer) override {
-        list_observer_.remove(observer);
+    void Detach(IClient *client) override {
+        list_client_.remove(client);
     }
     void Notify() override {
-        std::list<IObserver *>::iterator iterator = list_observer_.begin();
-        HowManyObserver();
-        while (iterator != list_observer_.end()) {
+        std::list<IClient *>::iterator iterator = list_client_.begin();
+        HowManyClient();
+        while (iterator != list_client_.end()) {
             (*iterator)->Update(message_);
             ++iterator;
         }
@@ -51,8 +51,8 @@ public:
         this->message_ = message;
         Notify();
     }
-    void HowManyObserver() {
-        cout << "There are " << list_observer_.size() << " observers in the list." << endl;;
+    void HowManyClient() {
+        cout << "There are " << list_client_.size() << " clients in the list." << endl;;
     }
 
 /**
@@ -68,71 +68,72 @@ public:
     }
 
 private:
-    std::list<IObserver *> list_observer_;
+    std::list<IClient *> list_client_;
     std::string message_;
 };
 
-class Observer : public IObserver {
+class Client : public IClient {
 public:
-    Observer(Subject &subject) : subject_(subject) {
-        this->subject_.Attach(this);
-        cout << "Hi, I'm the Observer " << ++Observer::static_number_ << endl;
-        this->number_ = Observer::static_number_;
+    Client(Creator &creator) : creator_(creator) {
+        this->creator_.Attach(this);
+        cout << "Hi, I'm the Client " << ++Client::static_number_ << endl;
+        this->number_ = Client::static_number_;
     }
-    virtual ~Observer() {
-        cout << "Goodbye, I was the Observer " << this->number_ << endl;
+    virtual ~Client() {
+        cout << "Goodbye, I was the Client " << this->number_ << endl;
     }
 
-    void Update(const std::string &message_from_subject) override {
-        message_from_subject_ = message_from_subject;
+    void Update(const std::string &message_from_creator) override {
+        message_from_creator_ = message_from_creator;
         PrintInfo();
     }
     void RemoveMeFromTheList() {
-        subject_.Detach(this);
-        cout << "Observer " << number_ << " removed from the list." << endl;
+        creator_.Detach(this);
+        cout << "Client " << number_ << " removed from the list." << endl;
     }
     void PrintInfo() {
-        cout << "Observer " << this->number_ << ": a new message is available —> " << this->message_from_subject_ << endl;
+        cout << "Client " << this->number_ << ": a new message is available  " << this->message_from_creator_ << endl;
     }
 
 private:
-    string message_from_subject_;
-    Subject &subject_;
+    string message_from_creator_;
+    Creator &creator_;
     static int static_number_;
     int number_;
 };
 
-int Observer::static_number_ = 0;
+int Client::static_number_ = 0;
 
 void ClientCode() {
-    Subject *subject = new Subject;
-    Observer *observer1 = new Observer(*subject);
-    Observer *observer2 = new Observer(*subject);
-    Observer *observer3 = new Observer(*subject);
-    Observer *observer4;
-    Observer *observer5;
+    
+    Creator * = new Creator;
+    Client *client1 = new Client(*creator);
+    Client *client2 = new Client(*creator);
+    Client *client3 = new Client(*creator);
+    Client *client4;
+    Client *client5;
 
-    subject->CreateMessage("Hello World! :D");
-    observer3->RemoveMeFromTheList();
+    creator->CreateMessage("Hello World! :D");
+    client3->RemoveMeFromTheList();
 
-    subject->CreateMessage("The weather is hot today! :p");
-    observer4 = new Observer(*subject);
+    creator->CreateMessage("The weather is hot today! :p");
+    client4 = new Client(*creator);
 
-    observer2->RemoveMeFromTheList();
-    observer5 = new Observer(*subject);
+    client2->RemoveMeFromTheList();
+    client5 = new Client(*creator);
 
-    subject->CreateMessage("My new car is great! ;)");
-    observer5->RemoveMeFromTheList();
+    creator->CreateMessage("My new car is great! ;)");
+    client5->RemoveMeFromTheList();
 
-    observer4->RemoveMeFromTheList();
-    observer1->RemoveMeFromTheList();
+    client4->RemoveMeFromTheList();
+    client1->RemoveMeFromTheList();
 
-    delete observer5;
-    delete observer4;
-    delete observer3;
-    delete observer2;
-    delete observer1;
-    delete subject;
+    delete client5;
+    delete client4;
+    delete client3;
+    delete client2;
+    delete client1;
+    delete creator;
 }
 
 int main() {
