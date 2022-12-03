@@ -1,159 +1,70 @@
-#include <algorithm>
-#include <iostream>
-#include <list>
-#include <string>
+//
+// Created by Каринэ Матевосян on 03.12.2022.
+//
 
-using namespace std;
+#include "composite.h"
 
-class Component {
-    protected:
-        Component *parent_;
-    public:
-        virtual ~Component() {}
-        void SetParent(Component *parent) {
-            this->parent_ = parent;
-        }
-        Component *GetParent() const {
-            return this->parent_;
-        }
+Food::Food(string name, int price) {
+    food_name = name;
+    food_price = price;
+}
 
-        virtual void Add(Component *component) {}
-        virtual void Remove(Component *component) {}
+int Food::GetPrice() const {
+    return food_price;
+}
 
-        virtual bool IsCategory() const {
-            return false;
-        }
+string Food::GetName() const {
+    return food_name;
+}
 
-        virtual string Operation() const = 0;
-};
+string Food::Operation() const {
+    return "\n        '" + food_name + "'\n" + "        Цена: " + to_string(food_price) + "р \n";
+}
 
-class Food : public Component {
-    string food_name;
-    int food_price;
 
-    public:
-        Food(string name, int price) {
-            food_name = name;
-            food_price = price;
-        }
+Category::Category(string name) {
+        category_name = name;
+}
 
-        int GetPrice() {
-            return food_price;
-        }
+void Category::Add(Component *component) {
+        this->children_.push_back(component);
+        component->SetParent(this);
+}
 
-        string Operation() const override {
-            return "\n        '" + food_name + "'\n" + "        Цена: " + to_string(food_price) + "р \n";
-        }
-};
+void Category::Remove(Component *component) {
+        children_.remove(component);
+        component->SetParent(nullptr);
+}
 
-class Category : public Component {
+bool Category::IsCategory() const {
+        return true;
+}
 
-    protected:
-        list<Component *> children_;
-
-    public:
-        string category_name;
-
-        Category(string name) {
-            category_name = name;
-        }
-
-        void Add(Component *component) override {
-            this->children_.push_back(component);
-            component->SetParent(this);
-        }
-
-        void Remove(Component *component) override {
-            children_.remove(component);
-            component->SetParent(nullptr);
-        }
-        bool IsCategory() const override {
-            return true;
-        }
-
-        string Operation() const override {
-            string result;
-            for (const Component *c : children_) {
-                if (c == children_.back()) {
-                    result += c->Operation();
-                } else {
-                    result += c->Operation();
-                }
+string Category::Operation() const {
+        string result;
+        for (const Component *c : children_) {
+            if (c == children_.back()) {
+                result += c->Operation();
+            } else {
+                result += c->Operation();
             }
-            return "\n" + category_name + ":" + result ;
         }
-};
-
-void GetInfo(Component *component) {
-    cout << component->Operation();
+        return "\n" + category_name + ":" + result ;
 }
 
-void ClientCode2(Component *component1, Component *component2) {
-    if (component1->IsCategory()) {
-        component1->Add(component2);
+string Category::GetName() const {
+    return category_name;
+}
+
+int Category::GetPrice() const {
+    int result;
+    for (const Component *c : children_) {
+        if (c == children_.back()) {
+            result += c->GetPrice();
+        } else {
+            result += c->GetPrice();
+        }
     }
-    cout << component1->Operation();
-
+    return result;
 }
 
-
-
-int main() {
-    Component *simple = new Food("Гамбургер", 190);
-    cout << "===========================" << endl;
-    cout << "Создание простого блюда:\n";
-    cout << "===========================" << endl;
-
-    GetInfo(simple);
-
-    Component *menu = new Category("Меню");
-
-    Component *category1 = new Category("Салаты");
-    Component *category2 = new Category("Бургеры");
-    Component *category3 = new Category("Напитки");
-
-    Component *subcategory1 = new Category("Холодные напитки");
-    Component *subcategory2 = new Category("Горячие напитки");
-
-    Component *food_1 = new Food("Цезарь", 220);
-    Component *food_2 = new Food("Оливье", 240);
-    Component *food_3 = new Food("Чизбургер", 230);
-    Component *food_4 = new Food("Сок", 110);
-    Component *food_5 = new Food("Латте", 220);
-
-    category1->Add(food_1);
-    category1->Add(food_2);
-    category2->Add(food_3);
-    subcategory1->Add(food_4);
-    subcategory2->Add(food_5);
-
-    menu->Add(category1);
-    menu->Add(category2);
-
-    category3->Add(subcategory1);
-    category3->Add(subcategory2);
-
-    menu->Add(category3);
-
-    cout << "===========================" << endl;
-    cout << "Сформированное меню:\n";
-    cout << "===========================" << endl;
-
-    GetInfo(menu);
-
-
-    delete simple;
-    delete menu;
-    delete category1;
-    delete category2;
-    delete category3;
-    delete subcategory1;
-    delete subcategory2;
-    delete food_1;
-    delete food_2;
-    delete food_3;
-    delete food_4;
-    delete food_5;
-
-    return 0;
-}
